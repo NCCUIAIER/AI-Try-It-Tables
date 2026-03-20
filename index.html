@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Try-It Tables — Research Remix</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --nccu-blue: #862633;
+    --nccu-gold: #84754E;
+    --prompt: #003C71;
+    --citation: #00843D;
+    --career: #E03C31;
+    --research: #D0006F;
+    --bg: #F4F6FA;
+    --card: #ffffff;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --radius: 16px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: var(--nccu-blue);
+    padding: 48px 32px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 40px,
+      rgba(132,117,78,0.08) 40px,
+      rgba(132,117,78,0.08) 41px
+    );
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(132,117,78,0.25);
+    border: 1px solid #84754E;
+    color: #FAE042;
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 100px;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(28px, 5vw, 48px);
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+  .hero h1 span { color: #FAE042; }
+  .hero p {
+    color: rgba(255,255,255,0.7);
+    font-size: 15px;
+    max-width: 500px;
+    margin: 0 auto 32px;
+    line-height: 1.6;
+  }
+
+  /* ── NAV TABS ── */
+  .tab-nav {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 0 16px;
+  }
+  .tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 100px;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.7);
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .tab-btn:hover { background: rgba(255,255,255,0.18); color: #fff; }
+  .tab-btn.active {
+    background: #fff;
+    color: var(--text);
+    border-color: transparent;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  }
+  .tab-btn .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── MAIN ── */
+  .main { max-width: 860px; margin: 0 auto; padding: 40px 20px 80px; }
+
+  /* ── PANEL ── */
+  .panel { display: none; animation: fadeUp 0.35s ease; }
+  .panel.active { display: block; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── PANEL HEADER ── */
+  .panel-header {
+    border-radius: var(--radius) var(--radius) 0 0;
+    padding: 32px 36px 28px;
+    margin-bottom: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .panel-header::after {
+    content: attr(data-emoji);
+    position: absolute;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 80px;
+    opacity: 0.12;
+    line-height: 1;
+    pointer-events: none;
+  }
+  .panel-header .kicker {
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 8px;
+  }
+  .panel-header h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(22px, 4vw, 32px);
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.1;
+    margin-bottom: 10px;
+  }
+  .panel-header p {
+    color: rgba(255,255,255,0.8);
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 520px;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--card);
+    border-radius: 0 0 var(--radius) var(--radius);
+    padding: 32px 36px;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.08);
+    margin-bottom: 24px;
+  }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.15;
+  }
+
+  /* ── FORMULA GRID ── */
+  .formula-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .formula-card {
+    border-radius: 12px;
+    padding: 18px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .formula-card .letter {
+    font-family: 'Syne', sans-serif;
+    font-size: 36px;
+    font-weight: 800;
+    color: rgba(255,255,255,0.2);
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    line-height: 1;
+  }
+  .formula-card .word {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+  .formula-card .desc {
+    font-size: 12px;
+    color: rgba(255,255,255,0.8);
+    line-height: 1.5;
+  }
+
+  /* ── PROMPT BOX ── */
+  .prompt-box {
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    border-left: 4px solid;
+    font-style: italic;
+    font-size: 15px;
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  /* ── TEXTAREA ── */
+  .write-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    margin-bottom: 8px;
+    display: block;
+  }
+  textarea {
+    width: 100%;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    resize: vertical;
+    min-height: 100px;
+    transition: border-color 0.2s;
+    background: #fafafa;
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+  textarea:focus {
+    outline: none;
+    border-color: currentColor;
+    background: #fff;
+  }
+
+  /* ── CHECKLIST ── */
+  .checklist { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    background: #f9fafb;
+    border: 1.5px solid #f0f0f0;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .check-item:hover { border-color: #d1d5db; background: #f3f4f6; }
+  .check-item.checked { border-color: currentColor; }
+  .check-item .box {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    border: 2px solid #d1d5db;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    margin-top: 1px;
+  }
+  .check-item.checked .box {
+    border-color: currentColor;
+    background: currentColor;
+  }
+  .check-item.checked .box::after {
+    content: '✓';
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .check-item span { font-size: 14px; line-height: 1.5; }
+
+  /* ── NUMBERED PROMPTS ── */
+  .prompt-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+  .prompt-item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: #f9fafb;
+    border: 1.5px solid #f0f0f0;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .prompt-item:hover { border-color: #d1d5db; }
+  .prompt-item.selected { background: #fff; }
+  .prompt-item .num {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    color: #fff;
+  }
+  .prompt-item p { font-size: 13px; line-height: 1.6; color: var(--text); }
+
+  /* ── SIFT TABLE ── */
+  .sift-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+  .sift-row {
+    display: flex;
+    gap: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1.5px solid #e5e7eb;
+  }
+  .sift-letter {
+    padding: 14px 18px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    color: #fff;
+    min-width: 130px;
+    display: flex;
+    align-items: center;
+  }
+  .sift-desc {
+    padding: 14px 18px;
+    font-size: 13px;
+    line-height: 1.5;
+    background: #fafafa;
+    flex: 1;
+    display: flex;
+    align-items: center;
+  }
+
+  /* ── TOOL TABLE ── */
+  .tool-table { border-radius: 12px; overflow: hidden; border: 1.5px solid #e5e7eb; margin-bottom: 24px; }
+  .tool-row { display: flex; border-bottom: 1px solid #f0f0f0; }
+  .tool-row:last-child { border-bottom: none; }
+  .tool-row.header { }
+  .tool-name {
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    min-width: 170px;
+    display: flex;
+    align-items: center;
+  }
+  .tool-desc {
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--muted);
+    flex: 1;
+    border-left: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+  }
+
+  /* ── RADIO FACT CHECK ── */
+  .radio-row { display: flex; gap: 10px; margin-bottom: 20px; }
+  .radio-opt {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1.5px solid #e5e7eb;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .radio-opt:hover { border-color: #d1d5db; }
+  .radio-opt.selected { color: #fff; border-color: transparent; }
+
+  /* ── PROGRESS ── */
+  .progress-wrap { margin-bottom: 28px; }
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .progress-bar {
+    height: 6px;
+    border-radius: 100px;
+    background: #e5e7eb;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 100px;
+    transition: width 0.5s ease;
+    width: 0%;
+  }
+
+  /* ── SAVE BTN ── */
+  .save-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 100px;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    color: #fff;
+    transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  }
+  .save-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+  .save-btn:active { transform: translateY(0); }
+
+  /* ── COMPLETION BADGE ── */
+  .completion {
+    display: none;
+    text-align: center;
+    padding: 24px;
+    border-radius: 12px;
+    margin-top: 16px;
+    border: 2px dashed;
+  }
+  .completion.show { display: block; }
+  .completion h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+  .completion p { font-size: 14px; }
+
+  /* ── DIVIDER ── */
+  .divider { height: 1px; background: #f0f0f0; margin: 24px 0; }
+
+  /* color utils */
+  .c-prompt   { color: var(--prompt); }
+  .c-citation { color: var(--citation); }
+  .c-career   { color: var(--career); }
+  .c-research { color: var(--research); }
+
+  .bg-prompt   { background: var(--prompt); }
+  .bg-citation { background: var(--citation); }
+  .bg-career   { background: var(--career); }
+  .bg-research { background: var(--research); }
+
+  .light-prompt   { background: #E8EEF5; }
+  .light-citation { background: #E6F4EC; }
+  .light-career   { background: #FDEEED; }
+  .light-research { background: #FCEEF6; }
+
+  /* ── LANDING SCREEN ── */
+  .landing {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+  .landing-intro {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .landing-intro h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .landing-intro p {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .table-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 18px;
+  }
+  .table-card {
+    border-radius: var(--radius);
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    background: var(--card);
+  }
+  .table-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.14);
+  }
+  .table-card:active { transform: translateY(-1px); }
+  .table-card-header {
+    padding: 28px 24px 22px;
+    position: relative;
+    overflow: hidden;
+  }
+  .table-card-header::after {
+    content: attr(data-emoji);
+    position: absolute;
+    right: 12px;
+    bottom: -10px;
+    font-size: 68px;
+    opacity: 0.13;
+    line-height: 1;
+    pointer-events: none;
+  }
+  .table-card-number {
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+    margin-bottom: 8px;
+  }
+  .table-card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 19px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+  .table-card-tagline {
+    font-size: 12px;
+    color: rgba(255,255,255,0.75);
+    line-height: 1.5;
+  }
+  .table-card-body {
+    padding: 18px 24px 20px;
+  }
+  .table-card-topics {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-bottom: 16px;
+  }
+  .table-card-topics li {
+    font-size: 12.5px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    line-height: 1.4;
+  }
+  .table-card-topics li::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: currentColor;
+    opacity: 0.4;
+  }
+  .table-card-cta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 16px;
+    border-radius: 10px;
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    transition: opacity 0.2s;
+  }
+  .table-card-cta:hover { opacity: 0.88; }
+  .arrow { font-size: 16px; }
+
+  /* ── BACK BAR ── */
+  .back-bar {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    background: var(--card);
+    border-bottom: 2px solid #862633;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(134,38,51,0.08);
+  }
+  .back-bar.visible { display: flex; }
+  .back-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 100px;
+    padding: 6px 14px;
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    color: var(--text);
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .back-btn:hover { background: var(--bg); border-color: #d1d5db; }
+  .back-bar-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .back-bar-tabs {
+    display: flex;
+    gap: 5px;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+  .back-tab {
+    padding: 5px 11px;
+    border-radius: 100px;
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1.5px solid #e5e7eb;
+    background: none;
+    color: var(--muted);
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .back-tab:hover { border-color: #d1d5db; color: var(--text); }
+  .back-tab.active { color: #fff; border-color: transparent; }
+
+  @media (max-width: 600px) {
+    .card { padding: 24px 20px; }
+    .panel-header { padding: 24px 20px; }
+    .formula-grid { grid-template-columns: 1fr 1fr; }
+    .sift-letter { min-width: 100px; font-size: 12px; }
+    .tool-name { min-width: 120px; }
+    .back-bar-tabs { display: none; }
+    .back-bar-title { display: none; }
+    .table-cards { grid-template-columns: 1fr; }
+  }
+
+  /* ── PRINT STYLES ── */
+  @media print {
+    @page { margin: 1.8cm 1.5cm; size: letter; }
+
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+    body { background: #fff; font-size: 12px; }
+
+    .hero {
+      background: #003087 !important;
+      padding: 24px 20px 20px;
+      margin-bottom: 0;
+      border-radius: 0;
+      page-break-after: avoid;
+    }
+    .hero::before { display: none; }
+    .hero h1 { font-size: 24px; }
+    .hero p { font-size: 12px; }
+    .tab-nav { display: none; }
+    .back-bar { display: none !important; }
+    .landing { display: none !important; }
+
+    .main { padding: 0; max-width: 100%; }
+
+    /* Show all panels when printing */
+    .panel { display: block !important; margin-bottom: 0; }
+    .panel.print-show { display: block !important; }
+
+    /* Page break between panels */
+    .panel + .panel { page-break-before: always; }
+
+    .panel-header {
+      border-radius: 0 !important;
+      padding: 20px 24px 16px;
+      page-break-after: avoid;
+      page-break-inside: avoid;
+    }
+    .panel-header h2 { font-size: 20px; }
+    .panel-header p { font-size: 12px; }
+    .panel-header::after { font-size: 48px; opacity: 0.08; }
+
+    .card {
+      border-radius: 0 !important;
+      box-shadow: none;
+      padding: 20px 24px;
+      page-break-inside: avoid;
+    }
+
+    .progress-wrap { display: none; }
+    .save-btn { display: none; }
+    .completion { display: none !important; }
+
+    .formula-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .formula-card { padding: 12px; }
+    .formula-card .letter { font-size: 24px; }
+    .formula-card .word { font-size: 11px; }
+    .formula-card .desc { font-size: 10px; }
+
+    .sift-letter { min-width: 110px; font-size: 11px; padding: 10px 12px; }
+    .sift-desc { font-size: 11px; padding: 10px 12px; }
+
+    .check-item { padding: 8px 12px; border-radius: 6px; page-break-inside: avoid; }
+    .check-item span { font-size: 12px; }
+
+    .prompt-item { padding: 10px 12px; page-break-inside: avoid; }
+    .prompt-item p { font-size: 11px; }
+
+    .tool-name { font-size: 11px; padding: 8px 12px; min-width: 130px; }
+    .tool-desc { font-size: 11px; padding: 8px 12px; }
+
+    /* Show textarea content as readable boxes */
+    textarea {
+      border: 1px solid #ccc !important;
+      background: #fafafa !important;
+      min-height: 70px;
+      font-size: 11px;
+      page-break-inside: avoid;
+    }
+
+    .radio-opt { font-size: 11px; padding: 8px; }
+
+    .prompt-box { font-size: 12px; padding: 14px 16px; page-break-inside: avoid; }
+
+    .section-label { font-size: 10px; margin-bottom: 10px; }
+    .divider { margin: 14px 0; }
+
+    .sift-grid { page-break-inside: avoid; }
+    .tool-table { page-break-inside: avoid; }
+    .formula-grid { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">NCCU IAIER · AI Symposium: Research Remix</div>
+  <h1>AI <span>Try-It</span> Tables</h1>
+  <p>Interactive stations for students & faculty to explore AI tools in research, writing, and career development.</p>
+  <p style="font-size:13px;color:rgba(255,255,255,0.5);letter-spacing:1px;">↓ Choose a table below to get started</p>
+</div>
+
+<!-- BACK BAR (shown when inside a panel) -->
+<div class="back-bar" id="back-bar">
+  <button class="back-btn" onclick="goHome()">← All Tables</button>
+  <span class="back-bar-title" id="back-bar-title"></span>
+  <div class="back-bar-tabs">
+    <button class="back-tab" onclick="switchTab('prompt')" id="btab-prompt">🩺 Prompt</button>
+    <button class="back-tab" onclick="switchTab('citation')" id="btab-citation">🔍 Citation</button>
+    <button class="back-tab" onclick="switchTab('career')" id="btab-career">🚀 Career</button>
+    <button class="back-tab" onclick="switchTab('research')" id="btab-research">🔬 Research</button>
+  </div>
+</div>
+
+<!-- LANDING SCREEN -->
+<div class="landing" id="landing-screen">
+  <div class="landing-intro">
+    <h2>Pick Your Table</h2>
+    <p>Each activity takes 5–10 minutes. Start anywhere — a volunteer is ready to help!</p>
+  </div>
+  <div class="table-cards">
+
+    <div class="table-card" onclick="switchTab('prompt')">
+      <div class="table-card-header bg-prompt" data-emoji="🩺">
+        <div class="table-card-number">Table 1 · 5–10 min</div>
+        <div class="table-card-title">🩺 Prompt Clinic</div>
+        <div class="table-card-tagline">Learn to write prompts that actually work</div>
+      </div>
+      <div class="table-card-body">
+        <ul class="table-card-topics">
+          <li style="--dot-color:#003087">The CARE formula for prompts</li>
+          <li>Upgrade a weak AI prompt</li>
+          <li>Try it with any AI tool</li>
+        </ul>
+        <div class="table-card-cta bg-prompt">Start Prompt Clinic <span class="arrow">→</span></div>
+      </div>
+    </div>
+
+    <div class="table-card" onclick="switchTab('citation')">
+      <div class="table-card-header bg-citation" data-emoji="🔍">
+        <div class="table-card-number">Table 2 · 5–10 min</div>
+        <div class="table-card-title">🔍 Citation & Credibility</div>
+        <div class="table-card-tagline">Fact-check AI like a researcher</div>
+      </div>
+      <div class="table-card-body">
+        <ul class="table-card-topics">
+          <li>The SIFT method for sources</li>
+          <li>Fact-check a real AI response</li>
+          <li>Generate a citation with AI</li>
+        </ul>
+        <div class="table-card-cta bg-citation">Start Citation Table <span class="arrow">→</span></div>
+      </div>
+    </div>
+
+    <div class="table-card" onclick="switchTab('career')">
+      <div class="table-card-header bg-career" data-emoji="🚀">
+        <div class="table-card-number">Table 3 · 5–10 min</div>
+        <div class="table-card-title">🚀 Career Boost</div>
+        <div class="table-card-tagline">Polish your resume & prep for interviews</div>
+      </div>
+      <div class="table-card-body">
+        <ul class="table-card-topics">
+          <li>Resume & LinkedIn prompts</li>
+          <li>Interview prep with AI</li>
+          <li>Communicate your research</li>
+        </ul>
+        <div class="table-card-cta bg-career">Start Career Boost <span class="arrow">→</span></div>
+      </div>
+    </div>
+
+    <div class="table-card" onclick="switchTab('research')">
+      <div class="table-card-header bg-research" data-emoji="🔬">
+        <div class="table-card-number">Table 4 · 5–10 min</div>
+        <div class="table-card-title">🔬 Research Starter</div>
+        <div class="table-card-tagline">Brainstorm topics & find the right tools</div>
+      </div>
+      <div class="table-card-body">
+        <ul class="table-card-topics">
+          <li>Where are you in the journey?</li>
+          <li>Brainstorm research questions</li>
+          <li>Top AI tools for research</li>
+        </ul>
+        <div class="table-card-cta bg-research">Start Research Starter <span class="arrow">→</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="main" id="main-panels" style="display:none;">
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- PANEL 1: PROMPT CLINIC                         -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="panel active" id="panel-prompt">
+    <div class="panel-header bg-prompt" data-emoji="🩺">
+      <div class="kicker">Table 1 · 5–10 Minutes</div>
+      <h2>🩺 Prompt Clinic</h2>
+      <p>Better prompts = better results. Learn the CARE formula and upgrade your AI interactions today.</p>
+    </div>
+    <div class="card">
+
+      <div class="progress-wrap">
+        <div class="progress-label"><span>Your Progress</span><span id="prog-prompt-label">0%</span></div>
+        <div class="progress-bar"><div class="progress-fill bg-prompt" id="prog-prompt"></div></div>
+      </div>
+
+      <div class="section-label c-prompt">The CARE Formula</div>
+      <div class="formula-grid">
+        <div class="formula-card bg-prompt">
+          <div class="letter">C</div>
+          <div class="word">Context</div>
+          <div class="desc">Give background about who you are or what you're working on</div>
+        </div>
+        <div class="formula-card" style="background:#002D62">
+          <div class="letter">A</div>
+          <div class="word">Action</div>
+          <div class="desc">Tell the AI exactly what you want it to do</div>
+        </div>
+        <div class="formula-card" style="background:#84754E">
+          <div class="letter">R</div>
+          <div class="word">Role</div>
+          <div class="desc">Ask AI to act as an expert (e.g., "Act as a research advisor")</div>
+        </div>
+        <div class="formula-card" style="background:#5C4F2A">
+          <div class="letter">E</div>
+          <div class="word">Examples</div>
+          <div class="desc">Provide a sample or format you want the AI to follow</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-label c-prompt">Try It! Upgrade This Weak Prompt</div>
+
+      <div class="prompt-box light-prompt" style="border-left-color: var(--prompt);">
+        "Write something about AI in healthcare."
+      </div>
+
+      <label class="write-label">Use the CARE formula to rewrite this prompt:</label>
+      <textarea id="prompt-rewrite" placeholder="Start with Context: I am a [your role] working on... Then add Action, Role, and an Example..." oninput="updateProgress('prompt')"></textarea>
+
+      <div class="divider"></div>
+      <div class="section-label c-prompt">Which AI tool did you use today?</div>
+      <div class="checklist" id="tools-checklist">
+        <div class="check-item c-prompt" onclick="toggleCheck(this, 'prompt')"><div class="box"></div><span>ChatGPT</span></div>
+        <div class="check-item c-prompt" onclick="toggleCheck(this, 'prompt')"><div class="box"></div><span>Claude (Anthropic)</span></div>
+        <div class="check-item c-prompt" onclick="toggleCheck(this, 'prompt')"><div class="box"></div><span>Gemini (Google)</span></div>
+        <div class="check-item c-prompt" onclick="toggleCheck(this, 'prompt')"><div class="box"></div><span>Copilot (Microsoft)</span></div>
+        <div class="check-item c-prompt" onclick="toggleCheck(this, 'prompt')"><div class="box"></div><span>Other</span></div>
+      </div>
+
+      <label class="write-label">One thing I want to try with AI after today:</label>
+      <textarea id="prompt-takeaway" placeholder="Write your takeaway here..." rows="3" oninput="updateProgress('prompt')"></textarea>
+
+      <div class="completion c-prompt light-prompt" id="completion-prompt" style="border-color: var(--prompt)">
+        <h3>🎉 Prompt Clinic Complete!</h3>
+        <p>Great work! You're already writing better prompts than 90% of people.</p>
+      </div>
+
+      <button class="save-btn bg-prompt" onclick="printSection('prompt')">⬇ Save / Print My Responses</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- PANEL 2: CITATION & CREDIBILITY                -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="panel" id="panel-citation">
+    <div class="panel-header bg-citation" data-emoji="🔍">
+      <div class="kicker">Table 2 · 5–10 Minutes</div>
+      <h2>🔍 Citation & Credibility</h2>
+      <p>AI can help you find sources — but you verify them. Practice the SIFT method and fact-check an AI response.</p>
+    </div>
+    <div class="card">
+
+      <div class="progress-wrap">
+        <div class="progress-label"><span>Your Progress</span><span id="prog-citation-label">0%</span></div>
+        <div class="progress-bar"><div class="progress-fill bg-citation" id="prog-citation"></div></div>
+      </div>
+
+      <div class="section-label c-citation">The SIFT Method</div>
+      <div class="sift-grid">
+        <div class="sift-row">
+          <div class="sift-letter bg-citation">S — Stop</div>
+          <div class="sift-desc">Pause before you share or cite. Is this source trustworthy?</div>
+        </div>
+        <div class="sift-row">
+          <div class="sift-letter" style="background:#006B32">I — Investigate</div>
+          <div class="sift-desc">Look up the author, publication, and date. Who is behind this?</div>
+        </div>
+        <div class="sift-row">
+          <div class="sift-letter" style="background:#009B55">F — Find Better Coverage</div>
+          <div class="sift-desc">Search for other sources that confirm or challenge the claim.</div>
+        </div>
+        <div class="sift-row">
+          <div class="sift-letter" style="background:#00B365">T — Trace Claims</div>
+          <div class="sift-desc">Go back to the original source of data or quotes.</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-label c-citation">Activity: Fact-Check an AI Response</div>
+
+      <div class="prompt-box light-citation" style="border-left-color: var(--citation);">
+        Ask an AI: "What are 3 recent breakthroughs in AI research?" Then use SIFT to verify one fact.
+      </div>
+
+      <label class="write-label">One fact the AI gave me:</label>
+      <textarea id="citation-fact" placeholder="Write the AI's claim here..." rows="3" oninput="updateProgress('citation')"></textarea>
+
+      <label class="write-label">How I verified it (source or website used):</label>
+      <textarea id="citation-verify" placeholder="e.g., I searched Google Scholar and found..." rows="3" oninput="updateProgress('citation')"></textarea>
+
+      <label class="write-label">Was the AI accurate?</label>
+      <div class="radio-row" id="accuracy-radio">
+        <div class="radio-opt" onclick="selectRadio(this, 'accuracy-radio', 'citation')">✅ Yes</div>
+        <div class="radio-opt" onclick="selectRadio(this, 'accuracy-radio', 'citation')">⚠️ Partially</div>
+        <div class="radio-opt" onclick="selectRadio(this, 'accuracy-radio', 'citation')">❌ No</div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-label c-citation">Bonus: Generate a Citation with AI</div>
+      <p style="font-size:13px; color: var(--muted); margin-bottom: 12px; line-height:1.6;">
+        Try prompting: <em>"Format this source in APA 7th edition: [paste your source info]"</em><br>
+        Then check it using Zotero, Purdue OWL, or your library database.
+      </p>
+
+      <label class="write-label">My AI-generated citation (paste or type it here):</label>
+      <textarea id="citation-cite" placeholder="e.g., Smith, J. (2024). AI in Research..." rows="3" oninput="updateProgress('citation')"></textarea>
+
+      <div class="completion c-citation light-citation" id="completion-citation" style="border-color: var(--citation)">
+        <h3>🎉 Citation & Credibility Complete!</h3>
+        <p>You're now equipped to fact-check AI like a pro researcher.</p>
+      </div>
+
+      <button class="save-btn bg-citation" onclick="printSection('citation')">⬇ Save / Print My Responses</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- PANEL 3: CAREER BOOST                          -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="panel" id="panel-career">
+    <div class="panel-header bg-career" data-emoji="🚀">
+      <div class="kicker">Table 3 · 5–10 Minutes</div>
+      <h2>🚀 Career Boost</h2>
+      <p>Polish your resume, prep for interviews, and present yourself professionally — with a little AI help.</p>
+    </div>
+    <div class="card">
+
+      <div class="progress-wrap">
+        <div class="progress-label"><span>Your Progress</span><span id="prog-career-label">0%</span></div>
+        <div class="progress-bar"><div class="progress-fill bg-career" id="prog-career"></div></div>
+      </div>
+
+      <div class="section-label c-career">What Can AI Help You With?</div>
+      <div class="checklist">
+        <div class="check-item c-career" onclick="toggleCheck(this, 'career')"><div class="box"></div><span>Rewriting resume bullets to sound more impactful</span></div>
+        <div class="check-item c-career" onclick="toggleCheck(this, 'career')"><div class="box"></div><span>Writing or improving my personal statement / cover letter</span></div>
+        <div class="check-item c-career" onclick="toggleCheck(this, 'career')"><div class="box"></div><span>Preparing for interview questions in my field</span></div>
+        <div class="check-item c-career" onclick="toggleCheck(this, 'career')"><div class="box"></div><span>Finding research or internship opportunities</span></div>
+        <div class="check-item c-career" onclick="toggleCheck(this, 'career')"><div class="box"></div><span>Building or improving my LinkedIn profile</span></div>
+        <div class="check-item c-career" onclick="toggleCheck(this, 'career')"><div class="box"></div><span>Translating my research into language non-experts understand</span></div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-label c-career">Try It! Pick a Prompt & Test It</div>
+      <p style="font-size:13px; color: var(--muted); margin-bottom: 14px;">Click a prompt to select it, then try it in your AI tool of choice.</p>
+
+      <div class="prompt-list" id="career-prompts">
+        <div class="prompt-item" onclick="selectPrompt(this, 'career')">
+          <div class="num bg-career">1</div>
+          <p>Act as a career coach. Rewrite this resume bullet to be more impactful: "[paste your bullet point]"</p>
+        </div>
+        <div class="prompt-item" onclick="selectPrompt(this, 'career')">
+          <div class="num bg-career">2</div>
+          <p>I am a [your major] student interested in [your career goal]. Write a 3-sentence professional summary for my LinkedIn profile.</p>
+        </div>
+        <div class="prompt-item" onclick="selectPrompt(this, 'career')">
+          <div class="num bg-career">3</div>
+          <p>What are 5 common interview questions for someone pursuing a career in [your field]? Give sample strong answers.</p>
+        </div>
+        <div class="prompt-item" onclick="selectPrompt(this, 'career')">
+          <div class="num bg-career">4</div>
+          <p>Help me explain my research on [your topic] in 2–3 sentences a non-scientist could understand.</p>
+        </div>
+      </div>
+
+      <label class="write-label">What did the AI generate? Was it useful?</label>
+      <textarea id="career-response" placeholder="Paste or summarize what the AI said..." rows="4" oninput="updateProgress('career')"></textarea>
+
+      <div class="divider"></div>
+      <div class="section-label c-career">One Career Goal I Have This Semester</div>
+      <textarea id="career-goal" placeholder="e.g., Apply for a research assistant position by April..." rows="3" oninput="updateProgress('career')"></textarea>
+
+      <div class="completion c-career light-career" id="completion-career" style="border-color: var(--career)">
+        <h3>🎉 Career Boost Complete!</h3>
+        <p>Your future self thanks you. Keep those prompts — they'll save you hours.</p>
+      </div>
+
+      <button class="save-btn bg-career" onclick="printSection('career')">⬇ Save / Print My Responses</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- PANEL 4: RESEARCH STARTER                      -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="panel" id="panel-research">
+    <div class="panel-header bg-research" data-emoji="🔬">
+      <div class="kicker">Table 4 · 5–10 Minutes</div>
+      <h2>🔬 Research Starter</h2>
+      <p>New to research or looking to level up? AI can help you brainstorm, understand literature, and organize ideas.</p>
+    </div>
+    <div class="card">
+
+      <div class="progress-wrap">
+        <div class="progress-label"><span>Your Progress</span><span id="prog-research-label">0%</span></div>
+        <div class="progress-bar"><div class="progress-fill bg-research" id="prog-research"></div></div>
+      </div>
+
+      <div class="section-label c-research">Where Are You in the Research Journey?</div>
+      <div class="checklist">
+        <div class="check-item c-research" onclick="toggleCheck(this, 'research')"><div class="box"></div><span>I'm brand new — I have no idea where to start</span></div>
+        <div class="check-item c-research" onclick="toggleCheck(this, 'research')"><div class="box"></div><span>I have a general interest but no specific topic yet</span></div>
+        <div class="check-item c-research" onclick="toggleCheck(this, 'research')"><div class="box"></div><span>I have a topic but haven't started searching for sources</span></div>
+        <div class="check-item c-research" onclick="toggleCheck(this, 'research')"><div class="box"></div><span>I have sources but need help organizing my ideas</span></div>
+        <div class="check-item c-research" onclick="toggleCheck(this, 'research')"><div class="box"></div><span>I'm working on a paper or poster and need feedback</span></div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-label c-research">Try It! Research Brainstorm with AI</div>
+
+      <div class="prompt-box light-research" style="border-left-color: var(--research);">
+        "I am a student interested in <strong>[your topic]</strong>. Suggest 5 specific research questions I could explore, and explain why each matters."
+      </div>
+
+      <label class="write-label">My topic / area of interest:</label>
+      <textarea id="research-topic" placeholder="e.g., AI in healthcare, climate policy, food deserts in urban areas..." rows="2" oninput="updateProgress('research')"></textarea>
+
+      <label class="write-label">The AI's research question suggestions (write your favorites):</label>
+      <textarea id="research-questions" placeholder="1. ...\n2. ...\n3. ..." rows="5" oninput="updateProgress('research')"></textarea>
+
+      <div class="divider"></div>
+      <div class="section-label c-research">AI Tools for Research</div>
+      <div class="tool-table">
+        <div class="tool-row" style="background: var(--research)">
+          <div class="tool-name" style="color:#fff; font-family:'Syne',sans-serif; font-size:12px; letter-spacing:1px; text-transform:uppercase;">Tool</div>
+          <div class="tool-desc" style="color:rgba(255,255,255,0.8); font-size:12px; letter-spacing:1px; text-transform:uppercase; font-family:'Syne',sans-serif; border-left-color: rgba(255,255,255,0.2)">Best Used For</div>
+        </div>
+        <div class="tool-row">
+          <div class="tool-name">Consensus.app</div>
+          <div class="tool-desc">Finding evidence-based answers from research papers</div>
+        </div>
+        <div class="tool-row" style="background:#fafafa">
+          <div class="tool-name">Elicit.org</div>
+          <div class="tool-desc">Summarizing and comparing academic literature</div>
+        </div>
+        <div class="tool-row">
+          <div class="tool-name">ChatGPT / Claude</div>
+          <div class="tool-desc">Brainstorming, outlining, explaining concepts</div>
+        </div>
+        <div class="tool-row" style="background:#fafafa">
+          <div class="tool-name">Google Scholar</div>
+          <div class="tool-desc">Finding peer-reviewed sources (always verify!)</div>
+        </div>
+        <div class="tool-row">
+          <div class="tool-name">Zotero + AI</div>
+          <div class="tool-desc">Organizing and citing your sources</div>
+        </div>
+      </div>
+
+      <label class="write-label">Which tool do you want to explore more?</label>
+      <div class="checklist">
+        <div class="check-item c-research" onclick="toggleCheck(this, 'research')"><div class="box"></div><span>Consensus.app</span></div>
+        <div class="check-item c-research" onclick="toggleCheck(this, 'research')"><div class="box"></div><span>Elicit.org</span></div>
+        <div class="check-item c-research" onclick="toggleCheck(this, 'research')"><div class="box"></div><span>ChatGPT or Claude</span></div>
+        <div class="check-item c-research" onclick="toggleCheck(this, 'research')"><div class="box"></div><span>Google Scholar</span></div>
+        <div class="check-item c-research" onclick="toggleCheck(this, 'research')"><div class="box"></div><span>Zotero</span></div>
+      </div>
+
+      <div class="completion c-research light-research" id="completion-research" style="border-color: var(--research)">
+        <h3>🎉 Research Starter Complete!</h3>
+        <p>You've taken the first step. Talk to a volunteer about finding a mentor or lab!</p>
+      </div>
+
+      <button class="save-btn bg-research" onclick="printSection('research')">⬇ Save / Print My Responses</button>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+  // ── TAB SWITCHING ──
+  const panelTitles = {
+    prompt: '🩺 Prompt Clinic',
+    citation: '🔍 Citation & Credibility',
+    career: '🚀 Career Boost',
+    research: '🔬 Research Starter'
+  };
+  const panelColors = {
+    prompt: '#003C71',
+    citation: '#00843D',
+    career: '#E03C31',
+    research: '#D0006F'
+  };
+
+  function switchTab(name) {
+    // Hide landing, show panels
+    document.getElementById('landing-screen').style.display = 'none';
+    document.getElementById('main-panels').style.display = 'block';
+
+    // Switch active panel
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+
+    // Update back bar
+    const bar = document.getElementById('back-bar');
+    bar.classList.add('visible');
+    document.getElementById('back-bar-title').textContent = panelTitles[name];
+
+    // Update back-tab active state
+    document.querySelectorAll('.back-tab').forEach(b => {
+      b.classList.remove('active');
+      b.style.background = '';
+      b.style.color = '';
+    });
+    const activeTab = document.getElementById('btab-' + name);
+    activeTab.classList.add('active');
+    activeTab.style.background = panelColors[name];
+
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function goHome() {
+    document.getElementById('landing-screen').style.display = 'block';
+    document.getElementById('main-panels').style.display = 'none';
+    document.getElementById('back-bar').classList.remove('visible');
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ── CHECKBOX TOGGLE ──
+  function toggleCheck(el, panel) {
+    el.classList.toggle('checked');
+    updateProgress(panel);
+  }
+
+  // ── PROMPT SELECTION ──
+  function selectPrompt(el, panel) {
+    el.closest('.prompt-list').querySelectorAll('.prompt-item').forEach(p => p.classList.remove('selected'));
+    el.classList.add('selected');
+    el.style.borderColor = getComputedStyle(document.documentElement).getPropertyValue('--' + panel);
+    el.style.background = '#fff';
+    updateProgress(panel);
+  }
+
+  // ── RADIO SELECTION ──
+  function selectRadio(el, groupId, panel) {
+    const colors = { prompt: '#003C71', citation: '#00843D', career: '#E03C31', research: '#D0006F' };
+    document.querySelectorAll('#' + groupId + ' .radio-opt').forEach(o => {
+      o.classList.remove('selected');
+      o.style.background = '';
+      o.style.color = '';
+    });
+    el.classList.add('selected');
+    el.style.background = colors[panel];
+    el.style.color = '#fff';
+    updateProgress(panel);
+  }
+
+  // ── PROGRESS TRACKING ──
+  const progressConfig = {
+    prompt: {
+      fields: ['prompt-rewrite', 'prompt-takeaway'],
+      checklists: ['tools-checklist'],
+      total: 3
+    },
+    citation: {
+      fields: ['citation-fact', 'citation-verify', 'citation-cite'],
+      radio: 'accuracy-radio',
+      total: 4
+    },
+    career: {
+      fields: ['career-response', 'career-goal'],
+      prompts: 'career-prompts',
+      checklists: [],
+      total: 3
+    },
+    research: {
+      fields: ['research-topic', 'research-questions'],
+      total: 3
+    }
+  };
+
+  function updateProgress(panel) {
+    const cfg = progressConfig[panel];
+    let filled = 0;
+
+    // text areas
+    (cfg.fields || []).forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el.value.trim().length > 3) filled++;
+    });
+
+    // checklists
+    (cfg.checklists || []).forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el.querySelector('.checked')) filled++;
+    });
+
+    // radio
+    if (cfg.radio) {
+      if (document.querySelector('#' + cfg.radio + ' .selected')) filled++;
+    }
+
+    // prompts
+    if (cfg.prompts) {
+      if (document.querySelector('#' + cfg.prompts + ' .selected')) filled++;
+    }
+
+    // any checked items for career/research
+    if (panel === 'career' || panel === 'research') {
+      const anyChecked = document.querySelector('#panel-' + panel + ' .check-item.checked');
+      if (anyChecked) filled = Math.min(filled + 1, cfg.total);
+    }
+
+    const pct = Math.min(Math.round((filled / cfg.total) * 100), 100);
+    document.getElementById('prog-' + panel).style.width = pct + '%';
+    document.getElementById('prog-' + panel + '-label').textContent = pct + '%';
+
+    const completion = document.getElementById('completion-' + panel);
+    if (pct === 100) {
+      completion.classList.add('show');
+    } else {
+      completion.classList.remove('show');
+    }
+  }
+
+  // ── PRINT / SAVE — full page with all panels ──
+  function printSection(panel) {
+    // Ensure main panels visible for print
+    document.getElementById('main-panels').style.display = 'block';
+    document.querySelectorAll('.panel').forEach(p => p.classList.add('print-show'));
+    window.print();
+    setTimeout(() => {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('print-show'));
+      // If we came from landing, restore it
+      if (document.getElementById('landing-screen').style.display !== 'none') {
+        document.getElementById('main-panels').style.display = 'none';
+      }
+    }, 1000);
+  }
+</script>
+</body>
+</html>
